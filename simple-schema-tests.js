@@ -454,7 +454,11 @@ function validate(ss, doc, isModifier, isUpsert, skipClean) {
   //so that we can be sure the filtering and type converting are not invalidating
   //documents that should be valid
   if (!skipClean) {
-    doc = ss.clean(doc);
+    if (!doc['$set']) {
+      doc = ss.clean(doc);
+    } else {
+      doc['$set'] = ss.clean(doc['$set']);
+    }
   }
 
   var context = ss.newContext();
@@ -939,6 +943,23 @@ Tinytest.add("SimpleSchema - Required Checks - Upsert - Invalid - Combined", fun
     return memo;
   }, 0);
   test.equal(regExErrorCount, 2);
+});
+
+Tinytest.add("SimpleSchema - Default Checks - Upsert - Valid", function(test) {
+  var schema = new SimpleSchema({
+    name: {
+      type: String,
+      defaultValue: "Test"
+    },
+    strVals: {
+      type: [String],
+      defaultValue: []
+    }
+  });
+
+  var sc = validate(schema, { $set: {}}, true, true);
+
+  test.equal(sc.invalidKeys(), []);
 });
 
 Tinytest.add("SimpleSchema - Required Checks - Update - Valid - $set", function(test) {

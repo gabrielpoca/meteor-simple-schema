@@ -480,7 +480,7 @@ SimpleSchema = function(schemas, options) {
         }
         self._autoValues[fieldName] = (function defineAutoValue(v) {
           return function() {
-            if (this.operator === null && !this.isSet) {
+            if ((this.operator === null && !this.isSet) || (this.isUpsert && !this.value)) {
               return v;
             }
           };
